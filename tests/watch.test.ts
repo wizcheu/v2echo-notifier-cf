@@ -59,7 +59,9 @@ beforeAll(async () => {
 }, 60000);
 afterAll(async () => { await mf?.dispose(); });
 beforeEach(async () => {
-  now = Date.now() + 1000;
+  // Align to a whole second so wall-clock elapsed time inside Context.now
+  // does not spuriously cross a 1-second truncation boundary mid-step.
+  now = Math.floor(Date.now() / 1000) * 1000 + 2000;
   await db.exec("DELETE FROM notifier_credentials");
   await db.exec("DELETE FROM notification_checks; DELETE FROM watch_local_operations; DELETE FROM watch_app_clients; DELETE FROM watch_app_invitation; DELETE FROM watch_cancellations; DELETE FROM notifier_source_transfer; DELETE FROM watch_targets; DELETE FROM watch_dedup; DELETE FROM notification_outbox; DELETE FROM notification_key_pins; DELETE FROM notifier; INSERT INTO notifier(id) VALUES(1); UPDATE assistant_instance SET assistant_id='',instance_enc=''; UPDATE watch_control SET explicit_pairing=0,config='',assistant_id='',instance_enc='',published_binding='',next_sync=0,last_sync=0,error='',config_owner='central',ownership_committed=0,ownership_revision=0; UPDATE control SET lease='',lease_until=0,next_dispatch=0,web_until=0,api_until=0;");
   const verified = await call("/action", { action: "verify", now, responses: [
