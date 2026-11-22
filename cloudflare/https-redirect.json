@@ -1,0 +1,23 @@
+{
+  "name": "Redirect rules",
+  "kind": "zone",
+  "phase": "http_request_dynamic_redirect",
+  "rules": [
+    {
+      "ref": "v2echo_notifier_https",
+      "description": "Require HTTPS for the V2Echo notifier dashboard",
+      "expression": "(http.host eq \"notifier.example.com\" and not ssl)",
+      "action": "redirect",
+      "action_parameters": {
+        "from_value": {
+          "target_url": {
+            "expression": "concat(\"https://notifier.example.com\", http.request.uri.path)"
+          },
+          "status_code": 308,
+          "preserve_query_string": true
+        }
+      },
+      "enabled": true
+    }
+  ]
+}

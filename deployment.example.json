@@ -1,0 +1,5 @@
+{
+  "accountId": "填写自己的32位Cloudflare账号ID",
+  "databaseId": "填写自己的D1数据库UUID",
+  "workerName": "v2echo-notifier-cf"
+}

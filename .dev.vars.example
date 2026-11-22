@@ -1,0 +1,14 @@
+# Copy to .dev.vars locally (or run: node scripts/init-local.mjs).
+# For cloud deployments, keep real values out of Git and upload via Worker Secrets.
+
+# Required: admin password for the Web UI (>= 32 chars). Generate with: openssl rand -hex 32
+ADMIN_TOKEN=""
+
+# Required: independent AES-256 key (64 lowercase hex chars) for encrypting D1 data.
+# Generate separately with: openssl rand -hex 32. Keep this value permanently across updates.
+NOTIFIER_KEY=""
+
+# Optional (legacy single-account fallback for account id=1).
+# Recommended: leave empty and add V2EX accounts directly in the Web UI after deployment.
+V2EX_COOKIE=""
+V2EX_PAT=""

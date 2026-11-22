@@ -1,0 +1,168 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "发布版本号（SemVer，例如 1.0.0 或 1.0.0-beta.1）"
+        type: string
+        required: true
+      prerelease:
+        description: "标记为预发布（Pre-release）"
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build & publish GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Resolve release version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            raw="${INPUT_VERSION#v}"
+            prerelease="$INPUT_PRERELEASE"
+          else
+            raw="${REF_NAME#v}"
+            if [[ "$raw" == *-* ]]; then
+              prerelease="true"
+            else
+              prerelease="false"
+            fi
+          fi
+          if [[ ! "$raw" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::版本号必须满足 SemVer 格式（例如 1.0.0 或 1.0.0-beta.1），收到：$raw"
+            exit 1
+          fi
+          echo "version=$raw" >> "$GITHUB_OUTPUT"
+          echo "tag=v$raw" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify package.json version alignment
+        if: github.event_name == 'push'
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          pkg_version="$(node -p "require('./package.json').version")"
+          if [[ "$pkg_version" != "$RELEASE_VERSION" ]]; then
+            echo "::error::Git Tag 版本 ($RELEASE_VERSION) 与 package.json ($pkg_version) 不一致，请先更新 package.json。"
+            exit 1
+          fi
+
+      - name: Typecheck, lint & test
+        run: |
+          npm run typecheck
+          npm run lint
+          npm test
+
+      - name: Build clean prebuilt bundle
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_BUILD: "1"
+        run: npm run build
+
+      - name: Pack release tarball & SHA256SUMS
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: npm run release:pack
+
+      - name: Smoke-test prebuilt release tarball
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          (cd dist-release && sha256sum -c SHA256SUMS.txt)
+          tmp="$(mktemp -d)"
+          tar -xzf "dist-release/v2echo-notifier-cf-${RELEASE_TAG}.tar.gz" -C "$tmp"
+          node -e '
+            const fs = require("fs");
+            const p = process.argv[1] + "/.cloudflare/output/v0/workers/default/worker.config.json";
+            const cfg = JSON.parse(fs.readFileSync(p, "utf8"));
+            cfg.env.DB.id = "11111111-1111-4111-8111-111111111111";
+            fs.writeFileSync(p, JSON.stringify(cfg, null, 2));
+          ' "$tmp"
+          (
+            cd "$tmp"
+            CLOUDFLARE_ACCOUNT_ID=00000000000000000000000000000000 \
+              "$GITHUB_WORKSPACE/node_modules/.bin/cf" deploy --dry-run --prebuilt --mode production
+          )
+          rm -rf "$tmp"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          PRERELEASE: ${{ steps.version.outputs.prerelease }}
+        run: |
+          archive="dist-release/v2echo-notifier-cf-${RELEASE_TAG}.tar.gz"
+          sums="dist-release/SHA256SUMS.txt"
+          notes="$(cat <<EOF
+          ## 升级方式（无需 Fork / 无需本地编译）
+
+          在已有部署目录运行：
+
+          \`\`\`bash
+          npm run update -- ${RELEASE_TAG}
+          \`\`\`
+
+          ## 首次安装
+
+          下载下方 \`v2echo-notifier-cf-${RELEASE_TAG}.tar.gz\` 并解压，运行：
+
+          \`\`\`bash
+          npm install
+          npm run setup
+          \`\`\`
+
+          详细步骤与迁移说明见 [README](https://github.com/${GITHUB_REPOSITORY}/blob/${RELEASE_TAG}/README.md) 与 [部署指南](https://github.com/${GITHUB_REPOSITORY}/blob/${RELEASE_TAG}/docs/deployment.md)。
+          EOF
+          )"
+          extra_flags=()
+          if [[ "$PRERELEASE" == "true" ]]; then
+            extra_flags+=(--prerelease)
+          fi
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            extra_flags+=(--target "$GITHUB_SHA")
+          fi
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$archive" "$sums" --clobber
+          else
+            gh release create "$RELEASE_TAG" "$archive" "$sums" \
+              --title "$RELEASE_TAG" \
+              --generate-notes \
+              --notes "$notes" \
+              "${extra_flags[@]}"
+          fi

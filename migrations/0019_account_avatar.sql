@@ -1,0 +1,1 @@
+ALTER TABLE notifier ADD COLUMN avatar_url TEXT NOT NULL DEFAULT '';

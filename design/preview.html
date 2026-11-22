@@ -1,0 +1,1698 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light" data-accent="v2echo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ink 墨线 · V2Echo 设计规范 v2</title>
+<style>
+  :root {
+    color-scheme: light;
+    --color-canvas: #f4f4f5;
+    --color-surface: #ffffff;
+    --color-rail: #fafafa;
+    --color-panel: #f6f6f7;
+    --color-input: #f2f2f3;
+    --color-ink: #18181b;
+    --color-ink-soft: #4b4b54;
+    --color-ink-muted: #5d5d67;
+    --color-on-ink: #ffffff;
+    --color-primary: #18181b;
+    --color-primary-hover: #2c2c31;
+    --color-on-primary: #ffffff;
+    --color-line: #e9e9ec;
+    --color-line-strong: #dedee3;
+    --color-switch: #d4d4d8;
+    --color-knob: #ffffff;
+    --color-accent: #8b6ff2;
+    --color-accent-strong: #5b45c9;
+    --color-accent-soft: #f2eeff;
+    --color-success-soft: #ecfdf3;
+    --color-success: #15803d;
+    --color-success-solid: #16a34a;
+    --color-warning-soft: #fffaeb;
+    --color-warning: #b45309;
+    --color-warning-solid: #d97706;
+    --color-danger-soft: #fef2f2;
+    --color-danger: #b91c1c;
+    --color-danger-solid: #ef4444;
+    --page: #ececee;
+    --radius-xs: 6px;
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --shadow-knob: 0 1px 2px rgb(24 24 27 / 18%);
+    --shadow-pop: 0 12px 32px -12px rgb(24 24 27 / 18%), 0 2px 8px -2px rgb(24 24 27 / 8%);
+    --shadow-float: 0 32px 80px -32px rgb(24 24 27 / 28%), 0 2px 12px -2px rgb(24 24 27 / 6%);
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --color-canvas: #0a0a0c;
+    --color-surface: #131316;
+    --color-rail: #0f0f11;
+    --color-panel: #19191d;
+    --color-input: #1d1d21;
+    --color-ink: #f4f4f5;
+    --color-ink-soft: #b4b4bc;
+    --color-ink-muted: #9a9aa4;
+    --color-on-ink: #131316;
+    --color-primary: #f4f4f5;
+    --color-primary-hover: #e4e4e7;
+    --color-on-primary: #131316;
+    --color-line: #242428;
+    --color-line-strong: #34343a;
+    --color-switch: #3f3f46;
+    --color-knob: #e4e4e7;
+    --color-success-soft: #10251a;
+    --color-success: #4ade80;
+    --color-success-solid: #34d399;
+    --color-warning-soft: #2a2010;
+    --color-warning: #fbbf24;
+    --color-warning-solid: #fbbf24;
+    --color-danger-soft: #2c1618;
+    --color-danger: #f87171;
+    --color-danger-solid: #ef4444;
+    --page: #070708;
+    --shadow-knob: 0 1px 2px rgb(0 0 0 / 45%);
+    --shadow-pop: 0 12px 32px -12px rgb(0 0 0 / 55%), 0 2px 8px -2px rgb(0 0 0 / 40%);
+    --shadow-float: 0 32px 80px -32px rgb(0 0 0 / 70%), 0 2px 12px -2px rgb(0 0 0 / 45%);
+  }
+
+  html[data-accent="v2echo"] { --color-accent: #8b6ff2; --color-accent-strong: #5b45c9; --color-accent-soft: #f2eeff; }
+  html[data-accent="v2echo-ocean"] { --color-accent: #3d82f6; --color-accent-strong: #1d4ed8; --color-accent-soft: #eff6ff; }
+  html[data-accent="v2echo-jade"] { --color-accent: #0b8261; --color-accent-strong: #035c42; --color-accent-soft: #ecfdf5; }
+  html[data-accent="v2echo-sakura"] { --color-accent: #d9559b; --color-accent-strong: #ad1457; --color-accent-soft: #fdf2f8; }
+  html[data-accent="v2echo-tangerine"] { --color-accent: #b96605; --color-accent-strong: #8a3d06; --color-accent-soft: #fffbeb; }
+  html[data-accent="v2echo-slate"] { --color-accent: #71717a; --color-accent-strong: #3f3f46; --color-accent-soft: #f4f4f5; }
+
+  html[data-theme="dark"][data-accent="v2echo"] { --color-accent: #b7a3ff; --color-accent-strong: #d4c6ff; --color-accent-soft: #221a33; }
+  html[data-theme="dark"][data-accent="v2echo-ocean"] { --color-accent: #7fb2ff; --color-accent-strong: #b3d1ff; --color-accent-soft: #122338; }
+  html[data-theme="dark"][data-accent="v2echo-jade"] { --color-accent: #6ee7b7; --color-accent-strong: #a7f3d0; --color-accent-soft: #0f2a21; }
+  html[data-theme="dark"][data-accent="v2echo-sakura"] { --color-accent: #f9a8d4; --color-accent-strong: #fbcfe8; --color-accent-soft: #331422; }
+  html[data-theme="dark"][data-accent="v2echo-tangerine"] { --color-accent: #fbbf24; --color-accent-strong: #fde68a; --color-accent-soft: #2e2110; }
+  html[data-theme="dark"][data-accent="v2echo-slate"] { --color-accent: #b4b4bd; --color-accent-strong: #e4e4e7; --color-accent-soft: #1f1f23; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--page);
+    color: var(--color-ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  a { color: inherit; }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .icon {
+    width: 16px; height: 16px; flex: none;
+    fill: none; stroke: currentColor; stroke-width: 2;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+  .brand-mark { display: block; fill: none; stroke: currentColor; }
+  .num, .tnum { font-variant-numeric: tabular-nums; }
+
+  :where(button, a, input, select):focus-visible {
+    outline: 2px solid var(--color-accent-strong);
+    outline-offset: 2px;
+  }
+
+  /* ---------- 文档页 ---------- */
+  .doc { max-width: 1360px; margin: 0 auto; padding: 56px 40px 88px; }
+  .doc-head {
+    max-width: 1280px; margin: 0 auto 28px;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 32px;
+  }
+  .eyebrow { font-size: 11px; font-weight: 500; letter-spacing: .08em; color: var(--color-ink-muted); }
+  .doc-head h1 { margin: 8px 0 0; font-size: 36px; line-height: 1.15; font-weight: 600; letter-spacing: -.01em; }
+  .doc-lede { max-width: 560px; margin: 10px 0 0; font-size: 14px; line-height: 1.65; color: var(--color-ink-soft); }
+  .doc-nav { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 22px; }
+  .doc-nav a {
+    padding-bottom: 2px; border-bottom: 1px solid transparent;
+    font-size: 12.5px; color: var(--color-ink-muted); text-decoration: none;
+    transition: color .12s, border-color .12s;
+  }
+  .doc-nav a:hover { color: var(--color-ink); border-color: var(--color-line-strong); }
+  .doc-actions { display: flex; align-items: center; gap: 14px; flex: none; padding-bottom: 2px; }
+  .doc-version { font-size: 11.5px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+  .doc-actions .btn { height: 32px; }
+
+  .window-figure { max-width: 1280px; margin: 0 auto; }
+  .window {
+    position: relative; display: flex;
+    height: 840px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 16px;
+    box-shadow: var(--shadow-float);
+    overflow: hidden;
+  }
+  .window--overview { height: 780px; }
+  .window-caption {
+    display: flex; align-items: center; gap: 8px;
+    margin: 12px 2px 0; font-size: 11.5px; color: var(--color-ink-muted);
+  }
+
+  /* ---------- 侧栏 ---------- */
+  .side {
+    width: 256px; flex: none;
+    display: flex; flex-direction: column;
+    padding: 12px;
+    background: var(--color-rail);
+    border-right: 1px solid var(--color-line);
+    transition: width .18s cubic-bezier(.2, 0, 0, 1);
+    overflow: hidden;
+  }
+  .side-head { display: flex; align-items: center; gap: 9px; min-height: 40px; padding: 2px 8px 10px; }
+  .side .brand-mark { width: 26px; height: 26px; border-radius: 7px; flex: none; }
+  .brand-name { min-width: 0; line-height: 1.2; }
+  .brand-name b { display: block; font-size: 13.5px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+  .brand-name span { display: block; margin-top: 1px; font-size: 10.5px; font-weight: 500; color: var(--color-ink-muted); white-space: nowrap; }
+  .side-collapse { margin-left: auto; }
+  .icon-btn.side-close { display: none; margin-left: auto; }
+  .side-label {
+    margin: 16px 0 6px; padding: 0 10px;
+    font-size: 11px; font-weight: 500; color: var(--color-ink-muted); white-space: nowrap;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    height: 36px; padding: 0 10px; border-radius: 8px;
+    color: var(--color-ink-soft); font-size: 13.5px; font-weight: 500;
+    text-decoration: none; white-space: nowrap;
+    transition: background .12s, color .12s;
+  }
+  .nav-item:hover { background: color-mix(in oklab, var(--color-input) 60%, transparent); color: var(--color-ink); }
+  .nav-item.is-active { background: var(--color-input); color: var(--color-ink); }
+  .nav-item .icon { width: 17px; height: 17px; stroke-width: 1.75; }
+  .nav-text { flex: 1; min-width: 0; }
+  .nav-count { font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--color-ink-muted); }
+  .nav-count.is-hot { color: var(--color-ink); }
+  .side-foot { margin-top: auto; padding-top: 12px; }
+  .side-status {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 10px; overflow: hidden;
+    font-size: 11.5px; color: var(--color-ink-muted); white-space: nowrap;
+  }
+  .side-status time { margin-left: auto; font-size: 10.5px; font-variant-numeric: tabular-nums; }
+  .account {
+    display: flex; align-items: center; gap: 9px; width: 100%;
+    padding: 8px; border: 0; border-radius: 8px;
+    background: transparent; text-align: left; cursor: pointer;
+    transition: background .12s;
+  }
+  .account:hover { background: color-mix(in oklab, var(--color-input) 60%, transparent); }
+  .avatar {
+    width: 28px; height: 28px; flex: none; border-radius: 999px;
+    display: grid; place-items: center;
+    background: var(--color-ink); color: var(--color-surface);
+    font-size: 11.5px; font-weight: 600;
+  }
+  .account-meta { min-width: 0; flex: 1; line-height: 1.25; }
+  .account-meta b { display: block; font-size: 12.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .account-meta span { display: block; margin-top: 1px; font-size: 11px; color: var(--color-ink-muted); white-space: nowrap; }
+  .account .icon-btn { width: 24px; height: 24px; }
+
+  .window.is-collapsed .side { width: 64px; padding-inline: 8px; }
+  .window.is-collapsed .brand-name,
+  .window.is-collapsed .brand-mark,
+  .window.is-collapsed .nav-text,
+  .window.is-collapsed .nav-count,
+  .window.is-collapsed .side-label,
+  .window.is-collapsed .side-status .status-text,
+  .window.is-collapsed .side-status time,
+  .window.is-collapsed .account-meta,
+  .window.is-collapsed .account .icon-btn { display: none; }
+  .window.is-collapsed .side-head { justify-content: center; padding-inline: 0; }
+  .window.is-collapsed .side-collapse { margin: 0; }
+  .window.is-collapsed .nav-item { justify-content: center; padding: 0; }
+  .window.is-collapsed .side-status { justify-content: center; padding-inline: 0; }
+  .window.is-collapsed .account { justify-content: center; padding-inline: 0; }
+
+  /* ---------- 主区 ---------- */
+  .main {
+    flex: 1; min-width: 0;
+    background: var(--color-surface);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  .content { max-width: 980px; margin: 0 auto; padding: 32px 44px 56px; }
+  .content--settings { max-width: 900px; }
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--color-ink-muted);
+  }
+  .breadcrumbs .icon { width: 14px; height: 14px; }
+  .breadcrumbs .chev { width: 12px; height: 12px; }
+  .breadcrumbs .current { color: var(--color-ink-soft); }
+  .page-head {
+    display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+    gap: 20px 24px; margin-top: 14px;
+  }
+  .page-title { margin: 0; font-size: 28px; line-height: 1.25; font-weight: 600; letter-spacing: -.01em; }
+  .page-sub { margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--color-ink-muted); }
+  .page-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 4px; }
+  .mobile-bar { display: none; }
+
+  /* ---------- 基础控件 ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    height: 32px; padding: 0 12px;
+    border: 1px solid transparent; border-radius: 8px;
+    background: transparent; color: var(--color-ink);
+    font-size: 13px; font-weight: 500; line-height: 1; white-space: nowrap;
+    text-decoration: none; cursor: pointer;
+    transition: background .12s, border-color .12s, color .12s;
+  }
+  .btn .icon { width: 15px; height: 15px; }
+  .btn-lg { height: 36px; padding: 0 14px; }
+  .btn-sm { height: 28px; padding: 0 10px; font-size: 12.5px; }
+  .btn-primary { background: var(--color-primary); color: var(--color-on-primary); }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+  .btn-secondary { background: var(--color-surface); border-color: var(--color-line-strong); color: var(--color-ink); }
+  .btn-secondary:hover { background: var(--color-input); }
+  .btn-ghost { color: var(--color-ink-soft); }
+  .btn-ghost:hover { background: var(--color-input); color: var(--color-ink); }
+  .btn-danger { color: var(--color-danger); }
+  .btn-danger:hover { background: var(--color-danger-soft); }
+  .btn:active { transform: translateY(.5px); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn.is-loading { opacity: 1; cursor: progress; }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; flex: none;
+    border: 0; border-radius: 8px;
+    background: transparent; color: var(--color-ink-muted);
+    cursor: pointer; transition: background .12s, color .12s;
+  }
+  .icon-btn:hover { background: var(--color-input); color: var(--color-ink); }
+  .icon-btn .icon { width: 16px; height: 16px; }
+  .spinner {
+    width: 14px; height: 14px; flex: none; border-radius: 999px;
+    border: 1.5px solid currentColor; border-right-color: transparent;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .search {
+    display: flex; flex: none; align-items: center; gap: 8px;
+    width: 240px; height: 36px; padding: 0 9px;
+    border: 1px solid var(--color-line-strong); border-radius: 8px;
+    background: var(--color-surface); color: var(--color-ink-muted);
+    font-size: 12.5px;
+  }
+  .search .icon { width: 15px; height: 15px; }
+  .search span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .kbd {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 22px; min-width: 22px; padding: 0 5px;
+    border: 1px solid var(--color-line-strong); border-radius: 5px;
+    background: var(--color-surface);
+    box-shadow: 0 1px 0 var(--color-line-strong);
+    color: var(--color-ink-soft);
+    font-family: inherit; font-size: 11px; font-weight: 500; line-height: 1;
+  }
+  .kbd.wide { padding: 0 8px; background: var(--color-input); box-shadow: none; }
+  .keys { display: inline-flex; align-items: center; gap: 5px; }
+  .kbd-plus { font-size: 10px; color: var(--color-ink-muted); }
+  .keys-note { margin-left: 4px; font-size: 12px; color: var(--color-ink-muted); }
+
+  .field-label { display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 500; color: var(--color-ink-soft); }
+  .input {
+    width: 100%; height: 36px; padding: 0 10px;
+    border: 1px solid var(--color-line-strong); border-radius: 8px;
+    background: var(--color-surface); color: var(--color-ink);
+    font-size: 13px;
+  }
+  .input::placeholder { color: var(--color-ink-muted); }
+  .select-wrap { position: relative; width: 100%; max-width: 360px; }
+  .select-wrap > .leading {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px; color: var(--color-ink-muted); pointer-events: none;
+  }
+  .select-wrap > .chev {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    width: 14px; height: 14px; color: var(--color-ink-muted); pointer-events: none;
+  }
+  .select {
+    appearance: none; -webkit-appearance: none;
+    width: 100%; height: 36px; padding: 0 30px 0 10px;
+    border: 1px solid var(--color-line-strong); border-radius: 8px;
+    background: var(--color-surface); color: var(--color-ink);
+    font-size: 13px; cursor: pointer;
+  }
+  .select.has-leading { padding-left: 32px; }
+  .select:hover { background: color-mix(in oklab, var(--color-input) 35%, var(--color-surface)); }
+  .input:focus-visible, .select:focus-visible {
+    outline: none;
+    border-color: var(--color-accent-strong);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 14%, transparent);
+  }
+
+  .switch {
+    position: relative; width: 36px; height: 20px; flex: none;
+    padding: 0; border: 0; border-radius: 999px;
+    background: var(--color-switch); cursor: pointer;
+    transition: background .16s cubic-bezier(.2, 0, 0, 1);
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 999px;
+    background: var(--color-knob); box-shadow: var(--shadow-knob);
+    transition: transform .16s cubic-bezier(.2, 0, 0, 1), background .16s;
+  }
+  .switch[aria-checked="true"] { background: var(--color-primary); }
+  .switch[aria-checked="true"]::after { transform: translateX(16px); background: var(--color-on-primary); }
+  .switch-text { font-size: 13px; color: var(--color-ink-soft); }
+
+  .dot { width: 6px; height: 6px; flex: none; border-radius: 999px; background: var(--color-ink-muted); }
+  .dot.ok { background: var(--color-success-solid); }
+  .dot.warn { background: var(--color-warning-solid); }
+  .dot.danger { background: var(--color-danger-solid); }
+  .dot.accent { background: var(--color-accent); }
+  .status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; color: var(--color-ink-soft); white-space: nowrap;
+  }
+  .status.warn { color: var(--color-warning); }
+  .status.danger { color: var(--color-danger); }
+  .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 18px; min-width: 18px; padding: 0 6px;
+    border-radius: 6px; background: var(--color-input); color: var(--color-ink-muted);
+    font-size: 10.5px; font-weight: 500; font-variant-numeric: tabular-nums;
+  }
+  .badge.solid { background: var(--color-primary); color: var(--color-on-primary); border-radius: 999px; }
+
+  .tabs {
+    display: flex; gap: 24px; margin-top: 24px;
+    border-bottom: 1px solid var(--color-line);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: none; height: 36px; padding: 0 1px;
+    border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    background: none; color: var(--color-ink-muted);
+    font-size: 13.5px; font-weight: 500; cursor: pointer;
+    transition: color .12s, border-color .12s;
+  }
+  .tab:hover { color: var(--color-ink-soft); }
+  .tab[aria-selected="true"] { color: var(--color-ink); border-color: var(--color-ink); }
+  .tab:focus-visible { outline-offset: -2px; border-radius: 4px; }
+  .tab-panel { padding-top: 28px; }
+  .tab-panel[hidden] { display: none; }
+
+  /* ---------- 设置 ---------- */
+  .setting-section + .setting-section { margin-top: 40px; }
+  .setting-head h3 { margin: 0; font-size: 16px; line-height: 1.5; font-weight: 600; letter-spacing: -.01em; }
+  .setting-head p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--color-ink-muted); }
+  .rows { margin-top: 12px; border-top: 1px solid var(--color-line); }
+  .row {
+    display: grid; grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
+    gap: 32px; align-items: start;
+    padding: 15px 0; border-bottom: 1px solid var(--color-line);
+    min-height: 56px;
+  }
+  .row:last-child { border-bottom: 0; }
+  .row-label { font-size: 13.5px; font-weight: 500; line-height: 1.5; color: var(--color-ink); }
+  .row-desc { margin: 3px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--color-ink-muted); }
+  .row-control { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 24px; }
+  .panel {
+    padding: 14px 16px; border-radius: 10px;
+    background: var(--color-panel); color: var(--color-ink-soft);
+    font-size: 12.5px; line-height: 1.6;
+  }
+  .panel strong { color: var(--color-ink); font-weight: 600; }
+  .panel-note { margin-top: 24px; }
+
+  .mode-group { display: flex; flex-wrap: wrap; gap: 12px; }
+  .mode-card { width: 138px; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; }
+  .mode-preview {
+    display: block;
+    height: 84px; padding: 7px; overflow: hidden;
+    border: 1px solid var(--color-line-strong); border-radius: 10px;
+    background: #fff;
+    transition: box-shadow .16s, border-color .16s;
+  }
+  .mode-card[aria-checked="true"] .mode-preview { border-color: transparent; box-shadow: 0 0 0 2px var(--color-ink); }
+  .mode-label {
+    display: flex; align-items: center; gap: 5px;
+    margin-top: 8px; font-size: 12.5px; font-weight: 500; color: var(--color-ink-muted);
+  }
+  .mode-label .icon { display: none; width: 13px; height: 13px; color: var(--color-ink); }
+  .mode-card[aria-checked="true"] .mode-label { color: var(--color-ink); }
+  .mode-card[aria-checked="true"] .mode-label .icon { display: block; }
+  .mini { display: flex; height: 100%; border-radius: 5px; overflow: hidden; background: #f7f7f8; }
+  .mini-side { width: 24px; flex: none; padding: 4px; background: #f1f1f3; border-right: 1px solid #e7e7ea; }
+  .mini-side i { display: block; height: 3px; margin-bottom: 3px; border-radius: 2px; background: #dcdce1; }
+  .mini-side i:first-child { width: 10px; height: 5px; margin-bottom: 5px; background: #c6c6cd; }
+  .mini-main { flex: 1; padding: 5px 6px; background: #fff; }
+  .mini-main i { display: block; height: 3px; margin-bottom: 3px; border-radius: 2px; background: #e6e6ea; }
+  .mini-main i.h { width: 38%; height: 5px; margin-bottom: 5px; background: #c9c9d0; }
+  .mini-main i.w60 { width: 60%; }
+  .mini.dark { background: #141417; }
+  .mini.dark .mini-side { background: #18181c; border-color: #26262b; }
+  .mini.dark .mini-side i { background: #323238; }
+  .mini.dark .mini-side i:first-child { background: #55555e; }
+  .mini.dark .mini-main { background: #101013; }
+  .mini.dark .mini-main i { background: #2b2b31; }
+  .mini.dark .mini-main i.h { background: #5a5a64; }
+
+  .theme-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 420px; }
+  .theme-tile {
+    display: flex; align-items: center; gap: 9px;
+    height: 42px; padding: 0 10px;
+    border: 1px solid var(--color-line); border-radius: 8px;
+    background: var(--color-surface); color: var(--color-ink);
+    font-size: 13px; font-weight: 500; text-align: left; cursor: pointer;
+    transition: background .12s, box-shadow .12s;
+  }
+  .theme-tile:hover { background: var(--color-input); }
+  .theme-tile[aria-checked="true"] { border-color: transparent; box-shadow: 0 0 0 2px var(--color-ink); }
+  .theme-swatch {
+    width: 16px; height: 16px; flex: none; border-radius: 999px;
+    background: var(--sw); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .08);
+  }
+  .theme-tile .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .theme-tile .icon { display: none; width: 14px; height: 14px; }
+  .theme-tile[aria-checked="true"] .icon { display: block; }
+
+  .banner {
+    display: flex; gap: 10px; padding: 12px 14px;
+    border-radius: 10px; background: var(--color-danger-soft); color: var(--color-danger);
+    font-size: 12.5px; line-height: 1.55;
+  }
+  .banner .icon { width: 16px; height: 16px; margin-top: 1px; }
+  .banner strong { display: block; font-size: 13px; font-weight: 600; }
+
+  /* ---------- 数据页 ---------- */
+  .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 24px; margin-top: 26px; }
+  .metric-label { font-size: 12px; color: var(--color-ink-muted); }
+  .metric-value {
+    margin-top: 3px; font-size: 28px; line-height: 1.15; font-weight: 600;
+    letter-spacing: -.02em; font-variant-numeric: tabular-nums;
+  }
+  .metric-foot { display: flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 12px; color: var(--color-ink-muted); }
+  .metric-foot .dot { width: 5px; height: 5px; }
+  .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 34px 0 4px; }
+  .section-head h3 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+  .section-head .meta { font-size: 11.5px; color: var(--color-ink-muted); }
+  .table-wrap { overflow-x: auto; }
+  .table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 13px; }
+  .table th {
+    padding: 8px 10px 10px; border-bottom: 1px solid var(--color-line);
+    text-align: left; font-size: 11.5px; font-weight: 500; color: var(--color-ink-muted); white-space: nowrap;
+  }
+  .table td {
+    height: 44px; padding: 10px; border-bottom: 1px solid var(--color-line);
+    color: var(--color-ink-soft); font-size: 12.5px; vertical-align: middle;
+  }
+  .table tbody tr:last-child td { border-bottom: 0; }
+  .table tbody tr:hover { background: color-mix(in oklab, var(--color-input) 45%, transparent); }
+  .table .strong { color: var(--color-ink); font-weight: 500; }
+  .table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .table th:first-child, .table td:first-child { padding-left: 2px; }
+  .table th:last-child, .table td:last-child { padding-right: 2px; }
+  .page-foot { margin-top: 28px; font-size: 11.5px; color: var(--color-ink-muted); }
+
+  /* ---------- 登录 ---------- */
+  .login-stage {
+    display: grid; grid-template-columns: minmax(0, 1fr); place-items: center;
+    min-height: 560px; padding: 56px 24px;
+    border-radius: 16px; background: var(--color-canvas);
+  }
+  .login-card {
+    width: 400px; max-width: 100%; padding: 32px;
+    border: 1px solid var(--color-line); border-radius: 16px;
+    background: var(--color-surface); box-shadow: var(--shadow-float);
+  }
+  .login-card .brand-mark { width: 40px; height: 40px; }
+  .login-card h2 { margin: 16px 0 0; font-size: 22px; line-height: 1.3; font-weight: 600; letter-spacing: -.02em; }
+  .login-card .sub { margin: 6px 0 0; font-size: 13px; line-height: 1.55; color: var(--color-ink-muted); }
+  .login-form { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+  .login-form .btn { width: 100%; height: 36px; }
+  .login-foot { margin: 16px 0 0; text-align: center; font-size: 11.5px; line-height: 1.5; color: var(--color-ink-muted); }
+
+  /* ---------- 文档分区 ---------- */
+  .doc-section { max-width: 1280px; margin: 72px auto 0; }
+  .doc-section-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-bottom: 18px; }
+  .doc-section-head .idx { font-size: 11px; font-weight: 500; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+  .doc-section-head h2 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -.015em; }
+  .doc-section-head p { width: 100%; margin: 0 0 0 25px; font-size: 12.5px; color: var(--color-ink-muted); }
+  .doc-panel { padding: 32px; border-radius: 16px; background: var(--color-surface); }
+  .sub-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 36px 0 14px; }
+  .sub-head:first-child { margin-top: 0; }
+  .sub-head h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--color-ink); }
+  .sub-head span { font-size: 11px; color: var(--color-ink-muted); }
+
+  .swatch-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+  .swatch { min-width: 0; }
+  .swatch-chip { height: 48px; border: 1px solid var(--color-line); border-radius: 8px; background: var(--sw); }
+  .swatch-name { margin-top: 7px; font-size: 12px; font-weight: 500; color: var(--color-ink); }
+  .swatch-val { margin-top: 1px; font-size: 11px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+
+  .type-rows { border-top: 1px solid var(--color-line); }
+  .type-row {
+    display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 24px; align-items: baseline;
+    padding: 14px 0; border-bottom: 1px solid var(--color-line);
+  }
+  .type-tag { font-size: 11px; font-weight: 500; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+  .t-display { font-size: 36px; line-height: 1.15; font-weight: 600; }
+  .t-h1 { font-size: 28px; line-height: 1.25; font-weight: 600; }
+  .t-h2 { font-size: 20px; line-height: 1.35; font-weight: 600; }
+  .t-h3 { font-size: 16px; line-height: 1.5; font-weight: 600; }
+  .t-body { font-size: 14px; line-height: 1.6; color: var(--color-ink-soft); }
+  .t-label { font-size: 13px; line-height: 1.5; font-weight: 500; }
+  .t-meta { font-size: 12px; line-height: 1.5; color: var(--color-ink-soft); }
+  .t-micro { font-size: 11px; line-height: 1.4; font-weight: 500; color: var(--color-ink-soft); }
+  .t-metric { font-size: 28px; line-height: 1.15; font-weight: 600; }
+  .t-display .num, .t-h1 .num, .t-h2 .num, .t-metric .num { letter-spacing: -.02em; }
+  .t-display .num { letter-spacing: -.03em; }
+
+  .control-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 48px; }
+  .control-group { min-width: 0; }
+  .control-group.span-2 { grid-column: 1 / -1; }
+  .control-label { margin-bottom: 10px; font-size: 11px; font-weight: 500; color: var(--color-ink-muted); }
+  .cluster { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .cluster + .cluster { margin-top: 10px; }
+  .cluster .kbd + span, .cluster .keys + span { margin-left: 4px; }
+  .field-demo { max-width: 320px; }
+  .field-demo + .field-demo { margin-top: 12px; }
+  .banner + .banner, .panel + .banner, .banner + .panel { margin-top: 10px; }
+
+  .toast {
+    position: fixed; right: 24px; bottom: 24px; z-index: 100;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 13px; border: 1px solid var(--color-line); border-radius: 10px;
+    background: var(--color-surface); box-shadow: var(--shadow-pop);
+    color: var(--color-ink); font-size: 12.5px; font-weight: 500;
+    opacity: 0; transform: translateY(6px); pointer-events: none;
+    transition: opacity .16s, transform .16s;
+  }
+  .toast.is-visible { opacity: 1; transform: none; }
+
+  .scrim { display: none; }
+
+  @media (max-width: 1100px) {
+    .content { padding: 28px 32px 48px; }
+    .search { width: 190px; }
+  }
+
+  @media (max-width: 900px) {
+    .doc { padding: 36px 20px 64px; }
+    .doc-head { flex-direction: column; align-items: flex-start; gap: 18px; }
+    .doc-head h1 { font-size: 32px; }
+    .window { height: auto; min-height: 720px; }
+    .main { overflow: visible; }
+    .side {
+      position: absolute; inset: 0 auto 0 0; z-index: 30;
+      width: 272px; transform: translateX(-102%);
+      box-shadow: var(--shadow-float);
+      transition: transform .2s cubic-bezier(.2, 0, 0, 1);
+    }
+    .window.drawer-open .side { transform: none; }
+    .side-collapse { display: none; }
+    .icon-btn.side-close { display: inline-flex; }
+    .scrim {
+      display: block; position: absolute; inset: 0; z-index: 25;
+      background: rgb(24 24 27 / 28%);
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .window.drawer-open .scrim { opacity: 1; pointer-events: auto; }
+    .mobile-bar {
+      position: sticky; top: 0; z-index: 15;
+      display: flex; align-items: center; gap: 10px;
+      height: 52px; padding: 0 16px;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-line);
+    }
+    .mobile-bar .mb-title { flex: 1; font-size: 14px; font-weight: 600; }
+    .content { max-width: none; padding: 24px 24px 48px; }
+    .page-head { margin-top: 12px; }
+    .control-groups { grid-template-columns: 1fr; }
+    .swatch-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .doc-panel { padding: 24px; }
+  }
+
+  @media (max-width: 640px) {
+    .doc { padding: 28px 16px 56px; }
+    .doc-version { display: none; }
+    .doc-nav { gap: 14px; }
+    .content { padding: 20px 18px 40px; }
+    .page-title { font-size: 24px; }
+    .page-sub { font-size: 13px; }
+    .page-actions { width: 100%; }
+    .search { display: none; }
+    .row { grid-template-columns: 1fr; gap: 10px; padding: 14px 0; }
+    .row-control { width: 100%; }
+    .select-wrap { max-width: none; }
+    .theme-grid { max-width: none; }
+    .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .mode-group { width: 100%; }
+    .mode-card { width: calc(50% - 6px); }
+    .mode-preview { height: 78px; }
+    .section-head { align-items: center; }
+    .doc-section { margin-top: 56px; }
+    .doc-section-head p { margin-left: 0; }
+    .doc-panel { padding: 20px 16px; }
+    .swatch-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .type-row { grid-template-columns: 1fr; gap: 4px; padding: 12px 0; }
+    .login-stage { min-height: 500px; padding: 32px 16px; }
+    .login-card { padding: 24px; }
+    .toast { left: 16px; right: 16px; bottom: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="bm-wash" x1="0.5" y1="0.5" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#6c5ce7" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+  <symbol id="brand-mark" viewBox="0 0 1024 1024">
+    <rect width="1024" height="1024" rx="240" fill="#ffffff"/>
+    <rect width="1024" height="1024" rx="240" fill="url(#bm-wash)"/>
+    <rect x="0.5" y="0.5" width="1023" height="1023" rx="239.5" fill="none" stroke="rgba(0,0,0,.07)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+    <g fill="none" stroke="#8e7cf0" stroke-width="24" stroke-linecap="round">
+      <path d="M 184 308 C 218 356 250 425 276 518"/>
+      <path d="M 154 370 C 184 413 205 458 222 498"/>
+      <path d="M 840 308 C 806 356 774 425 748 518"/>
+      <path d="M 870 370 C 840 413 819 458 802 498"/>
+    </g>
+    <path d="M 380 240 L 276 240 C 250 240 234 266 244 291 L 442 798 C 453 828 481 848 512 848 C 543 848 571 828 582 798 L 780 291 C 790 266 774 240 748 240 L 644 240 C 622 240 610 253 602 274 L 526 515 C 521 531 517 541 512 551 C 507 541 503 531 498 515 L 422 274 C 414 253 402 240 380 240 Z" fill="#6c5ce7"/>
+  </symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.51a2 2 0 0 1 1-1.73l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
+  <symbol id="i-network" viewBox="0 0 24 24"><rect width="6" height="6" x="9" y="2" rx="1"/><rect width="6" height="6" x="2" y="16" rx="1"/><rect width="6" height="6" x="16" y="16" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+</svg>
+
+<div class="doc">
+  <header class="doc-head">
+    <div>
+      <p class="eyebrow">V2ECHO · DESIGN SYSTEM</p>
+      <h1>Ink 墨线</h1>
+      <p class="doc-lede">近黑主色、发丝细线与系统字体。用系统设置的安静感，重绘通知助手的网页端；彩色只留给状态与未读。</p>
+      <nav class="doc-nav" aria-label="设计素材目录">
+        <a href="#preview-settings">设置页</a>
+        <a href="#preview-overview">概览页</a>
+        <a href="#preview-login">登录</a>
+        <a href="#preview-tokens">令牌与控件</a>
+      </nav>
+    </div>
+    <div class="doc-actions">
+      <span class="doc-version">v2.0 · 2026-11-15</span>
+      <button class="btn btn-secondary" id="docTheme" type="button" aria-pressed="false">
+        <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span>深色</span>
+      </button>
+    </div>
+  </header>
+
+  <figure class="window-figure" id="preview-settings">
+    <div class="doc-section-head">
+      <span class="idx">01</span>
+      <h2>设置页</h2>
+      <p>分组靠标题与留白划分；行与行之间只留一条发丝线。</p>
+    </div>
+    <div class="window" id="appWindow" role="group" aria-label="设置页预览">
+      <aside class="side" aria-label="侧栏">
+        <div class="side-head">
+          <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"/></svg>
+          <div class="brand-name"><b>V2Echo</b><span>通知助手</span></div>
+          <button class="icon-btn side-collapse" id="collapseBtn" type="button" aria-label="收起侧栏">
+            <svg class="icon" aria-hidden="true"><use href="#i-panel-left"/></svg>
+          </button>
+          <button class="icon-btn side-close" id="drawerClose" type="button" aria-label="关闭侧栏">
+            <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+        <nav aria-label="主导航">
+          <p class="side-label">主要</p>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg><span class="nav-text">概览</span></a>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg><span class="nav-text">个人消息</span><span class="nav-count is-hot">12</span></a>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><span class="nav-text">关注动态</span></a>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg><span class="nav-text">通知</span><span class="nav-count is-hot">3</span></a>
+          <p class="side-label">管理</p>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-clipboard"/></svg><span class="nav-text">检查记录</span></a>
+          <a class="nav-item is-active" href="#" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span class="nav-text">设置</span></a>
+        </nav>
+        <div class="side-foot">
+          <div class="side-status">
+            <span class="dot ok"></span>
+            <span class="status-text">通知服务运行中</span>
+            <time>2 分钟前</time>
+          </div>
+          <button class="account" type="button" aria-label="账号菜单">
+            <span class="avatar">W</span>
+            <span class="account-meta"><b>wizcheu</b><span>管理员</span></span>
+            <span class="icon-btn" aria-hidden="true"><svg class="icon"><use href="#i-more"/></svg></span>
+          </button>
+        </div>
+      </aside>
+
+      <div class="main">
+        <div class="mobile-bar">
+          <button class="icon-btn" id="menuBtn" type="button" aria-label="打开导航" aria-expanded="false">
+            <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+          </button>
+          <span class="mb-title">设置</span>
+          <button class="icon-btn" type="button" aria-label="搜索"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg></button>
+        </div>
+        <div class="content content--settings">
+          <div class="breadcrumbs">
+            <svg class="icon" aria-hidden="true"><use href="#i-home"/></svg>
+            <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            <span>V2Echo</span>
+            <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            <span class="current">设置</span>
+          </div>
+
+          <div class="page-head">
+            <div>
+              <h2 class="page-title">设置</h2>
+              <p class="page-sub">管理检查、通知、外观与账号连接。</p>
+            </div>
+            <div class="page-actions">
+              <div class="search" role="search">
+                <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+                <span>搜索设置</span>
+                <kbd class="kbd">⌘F</kbd>
+              </div>
+              <button class="btn btn-secondary btn-lg" type="button">取消</button>
+              <button class="btn btn-primary btn-lg" id="saveBtn" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>保存更改
+              </button>
+            </div>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="设置分区">
+            <button class="tab" id="tab-general" role="tab" aria-selected="true" aria-controls="panel-general" tabindex="0">通用</button>
+            <button class="tab" id="tab-appearance" role="tab" aria-selected="false" aria-controls="panel-appearance" tabindex="-1">外观</button>
+            <button class="tab" id="tab-notify" role="tab" aria-selected="false" aria-controls="panel-notify" tabindex="-1">通知</button>
+            <button class="tab" id="tab-account" role="tab" aria-selected="false" aria-controls="panel-account" tabindex="-1">账号</button>
+            <button class="tab" id="tab-advanced" role="tab" aria-selected="false" aria-controls="panel-advanced" tabindex="-1">高级</button>
+          </div>
+
+          <div class="tab-panel" id="panel-general" role="tabpanel" aria-labelledby="tab-general">
+            <section class="setting-section">
+              <div class="setting-head">
+                <h3>检查</h3>
+                <p>控制检查时段与轮询节奏；帖子无新增时会自动降频。</p>
+              </div>
+              <div class="rows">
+                <div class="row">
+                  <div>
+                    <div class="row-label">检查时段</div>
+                    <p class="row-desc">只在设定时段内轮询，跨午夜由结束时间判断。</p>
+                  </div>
+                  <div class="row-control">
+                    <div class="select-wrap">
+                      <svg class="icon leading" aria-hidden="true"><use href="#i-globe"/></svg>
+                      <select class="select has-leading" aria-label="检查时段">
+                        <option>08:00 – 24:00</option>
+                        <option>09:00 – 22:00</option>
+                        <option>全天</option>
+                      </select>
+                      <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">未读消息</div>
+                    <p class="row-desc">有新回复、感谢或提及时的检查间隔。</p>
+                  </div>
+                  <div class="row-control">
+                    <div class="select-wrap">
+                      <select class="select" aria-label="未读消息检查间隔">
+                        <option>10 分钟</option>
+                        <option>5 分钟</option>
+                        <option>15 分钟</option>
+                        <option>30 分钟</option>
+                      </select>
+                      <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">关注成员新帖</div>
+                    <p class="row-desc">成员发布新主题时的检查间隔。</p>
+                  </div>
+                  <div class="row-control">
+                    <div class="select-wrap">
+                      <select class="select" aria-label="关注成员新帖检查间隔">
+                        <option>15 分钟</option>
+                        <option>10 分钟</option>
+                        <option>30 分钟</option>
+                      </select>
+                      <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">关注帖子新评论</div>
+                    <p class="row-desc">已关注主题出现新回复时的检查间隔。</p>
+                  </div>
+                  <div class="row-control">
+                    <div class="select-wrap">
+                      <select class="select" aria-label="关注帖子新评论检查间隔">
+                        <option>5 分钟</option>
+                        <option>10 分钟</option>
+                        <option>15 分钟</option>
+                      </select>
+                      <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="setting-section">
+              <div class="setting-head">
+                <h3>启动</h3>
+                <p>打开页面时的初始行为。</p>
+              </div>
+              <div class="rows">
+                <div class="row">
+                  <div>
+                    <div class="row-label">打开页面时检查</div>
+                    <p class="row-desc">进入助手后立即同步一次通知与关注状态。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="switch" type="button" role="switch" aria-checked="true" aria-label="打开页面时检查"></button>
+                    <span class="switch-text">已开启</span>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">检查完成提醒</div>
+                    <p class="row-desc">每轮检查完成后发送一条系统通知。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="switch" type="button" role="switch" aria-checked="false" aria-label="检查完成提醒"></button>
+                    <span class="switch-text">已关闭</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="panel panel-note">
+              帖子无新增时自动降频；遇到限流或网络失败时，本轮检查会延后重试，不会跳过。
+            </div>
+          </div>
+
+          <div class="tab-panel" id="panel-appearance" role="tabpanel" aria-labelledby="tab-appearance" hidden>
+            <section class="setting-section">
+              <div class="setting-head">
+                <h3>外观</h3>
+                <p>外观设置保存在当前浏览器，不随账号同步。</p>
+              </div>
+              <div class="rows">
+                <div class="row">
+                  <div>
+                    <div class="row-label">外观模式</div>
+                    <p class="row-desc">选择浅色或深色界面。</p>
+                  </div>
+                  <div class="row-control">
+                    <div class="mode-group" role="radiogroup" aria-label="外观模式">
+                      <button class="mode-card" type="button" role="radio" aria-checked="true" data-mode="light">
+                        <span class="mode-preview">
+                          <span class="mini">
+                            <span class="mini-side"><i></i><i></i><i></i><i></i></span>
+                            <span class="mini-main"><i class="h"></i><i></i><i class="w60"></i><i></i></span>
+                          </span>
+                        </span>
+                        <span class="mode-label"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>浅色</span>
+                      </button>
+                      <button class="mode-card" type="button" role="radio" aria-checked="false" data-mode="dark">
+                        <span class="mode-preview">
+                          <span class="mini dark">
+                            <span class="mini-side"><i></i><i></i><i></i><i></i></span>
+                            <span class="mini-main"><i class="h"></i><i></i><i class="w60"></i><i></i></span>
+                          </span>
+                        </span>
+                        <span class="mode-label"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>深色</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">主题色</div>
+                    <p class="row-desc">用于焦点环、图表与未读标记。</p>
+                  </div>
+                  <div class="row-control">
+                    <div class="theme-grid" role="radiogroup" aria-label="主题色">
+                      <button class="theme-tile" type="button" role="radio" aria-checked="true" data-accent-option="v2echo" style="--sw:#8b6ff2">
+                        <span class="theme-swatch"></span><span class="name">品牌紫</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+                      </button>
+                      <button class="theme-tile" type="button" role="radio" aria-checked="false" data-accent-option="v2echo-ocean" style="--sw:#3d82f6">
+                        <span class="theme-swatch"></span><span class="name">晴蓝</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+                      </button>
+                      <button class="theme-tile" type="button" role="radio" aria-checked="false" data-accent-option="v2echo-jade" style="--sw:#0b8261">
+                        <span class="theme-swatch"></span><span class="name">青玉</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+                      </button>
+                      <button class="theme-tile" type="button" role="radio" aria-checked="false" data-accent-option="v2echo-sakura" style="--sw:#d9559b">
+                        <span class="theme-swatch"></span><span class="name">樱粉</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+                      </button>
+                      <button class="theme-tile" type="button" role="radio" aria-checked="false" data-accent-option="v2echo-tangerine" style="--sw:#b96605">
+                        <span class="theme-swatch"></span><span class="name">蜜橙</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+                      </button>
+                      <button class="theme-tile" type="button" role="radio" aria-checked="false" data-accent-option="v2echo-slate" style="--sw:#71717a">
+                        <span class="theme-swatch"></span><span class="name">石墨</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <div class="panel panel-note">
+              主题色不会改变主按钮、导航选中态与标签下划线；它们始终使用墨色，保证界面安静。
+            </div>
+          </div>
+
+          <div class="tab-panel" id="panel-notify" role="tabpanel" aria-labelledby="tab-notify" hidden>
+            <section class="setting-section">
+              <div class="setting-head">
+                <h3>推送</h3>
+                <p>控制 App 接收哪些通知。</p>
+              </div>
+              <div class="rows">
+                <div class="row">
+                  <div>
+                    <div class="row-label">接收推送</div>
+                    <p class="row-desc">关闭后仍会检查，只是不再发送通知。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="switch" type="button" role="switch" aria-checked="true" aria-label="接收推送"></button>
+                    <span class="switch-text">允许发送</span>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">检查完成提醒</div>
+                    <p class="row-desc">每轮检查完成后发送一条系统通知。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="switch" type="button" role="switch" aria-checked="false" aria-label="检查完成提醒"></button>
+                    <span class="switch-text">已关闭</span>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">测试通知</div>
+                    <p class="row-desc">测试通知独立发送，不计入真实未读数。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="btn btn-secondary" id="testBtn" type="button">
+                      <svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>发送测试通知
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="setting-section">
+              <div class="setting-head">
+                <h3>内容</h3>
+                <p>控制通知里显示多少信息。</p>
+              </div>
+              <div class="rows">
+                <div class="row">
+                  <div>
+                    <div class="row-label">摘要长度</div>
+                    <p class="row-desc">通知在锁屏与通知中心的展示方式。</p>
+                  </div>
+                  <div class="row-control">
+                    <div class="select-wrap">
+                      <select class="select" aria-label="通知摘要长度">
+                        <option>标题与正文</option>
+                        <option>仅标题</option>
+                        <option>仅数量</option>
+                      </select>
+                      <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">免打扰时段</div>
+                    <p class="row-desc">此时段内只静默记录，不发送推送。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="switch" type="button" role="switch" aria-checked="false" aria-label="免打扰时段"></button>
+                    <span class="switch-text">22:00 – 08:00</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-panel" id="panel-account" role="tabpanel" aria-labelledby="tab-account" hidden>
+            <section class="setting-section">
+              <div class="setting-head">
+                <h3>账号</h3>
+                <p>V2EX 账号、接收设备与访问凭据。</p>
+              </div>
+              <div class="rows">
+                <div class="row">
+                  <div>
+                    <div class="row-label">V2EX 账号</div>
+                    <p class="row-desc">验证账号后即可配对 App 接收通知。</p>
+                  </div>
+                  <div class="row-control">
+                    <span class="status"><span class="dot ok"></span>@wizcheu</span>
+                    <button class="btn btn-ghost" type="button">重新验证</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">接收设备</div>
+                    <p class="row-desc">已配对的设备可以接收个人通知。</p>
+                  </div>
+                  <div class="row-control">
+                    <span class="status"><span class="dot ok"></span>iPhone 15 Pro · 已配对</span>
+                    <button class="btn btn-secondary" type="button">管理</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">访问凭据</div>
+                    <p class="row-desc">用于读取 V2EX 通知与关注状态。</p>
+                  </div>
+                  <div class="row-control">
+                    <span class="status"><span class="dot ok"></span>Cookie 与 PAT 已配置</span>
+                    <button class="btn btn-secondary" type="button">
+                      <svg class="icon" aria-hidden="true"><use href="#i-key"/></svg>更新
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="setting-section">
+              <div class="setting-head">
+                <h3>会话</h3>
+                <p>只影响当前浏览器。</p>
+              </div>
+              <div class="rows">
+                <div class="row">
+                  <div>
+                    <div class="row-label">退出登录</div>
+                    <p class="row-desc">不会解除 App 配对，也不会停止后台检查。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="btn btn-danger" type="button">
+                      <svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>退出登录
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="panel panel-note">
+              访问凭据使用 AES-GCM 加密保存在 D1，仅用于读取 V2EX 通知；撤销后 App 需要重新验证。
+            </div>
+          </div>
+
+          <div class="tab-panel" id="panel-advanced" role="tabpanel" aria-labelledby="tab-advanced" hidden>
+            <section class="setting-section">
+              <div class="setting-head">
+                <h3>高级</h3>
+                <p>这些设置通常只需要配置一次。</p>
+              </div>
+              <div class="rows">
+                <div class="row">
+                  <div>
+                    <div class="row-label">网络代理</div>
+                    <p class="row-desc">当前直接连接；网络受限时可配置代理。</p>
+                  </div>
+                  <div class="row-control">
+                    <span class="status"><span class="dot"></span>直接连接</span>
+                    <button class="btn btn-secondary" type="button">
+                      <svg class="icon" aria-hidden="true"><use href="#i-network"/></svg>配置
+                    </button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">关注管理授权</div>
+                    <p class="row-desc">2 台设备可以读写关注规则。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="btn btn-ghost" type="button">管理设备</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">接替已有助手</div>
+                    <p class="row-desc">沿用原助手已配对的设备，无需重新扫码。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="btn btn-secondary" type="button">开始接替</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-label">清除本地缓存</div>
+                    <p class="row-desc">清除外观与筛选偏好，不删除服务端数据。</p>
+                  </div>
+                  <div class="row-control">
+                    <button class="btn btn-danger" type="button">
+                      <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>清除
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <div class="panel panel-note">
+              修改检查间隔后，从下一轮检查开始计算；正在进行的检查不会中断。
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="scrim" id="scrim"></div>
+    </div>
+    <figcaption class="window-caption">
+      <span class="dot ok"></span>设置页 · 桌面 1280px。实际网页铺满视口，此处以窗口形式呈现。
+    </figcaption>
+  </figure>
+
+  <section class="doc-section" id="preview-overview">
+    <div class="doc-section-head">
+      <span class="idx">02</span>
+      <h2>概览页</h2>
+      <p>指标不装进卡片，数据用行与发丝线组织。</p>
+    </div>
+    <div class="window window--overview" role="group" aria-label="概览页预览">
+      <aside class="side" aria-label="侧栏">
+        <div class="side-head">
+          <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"/></svg>
+          <div class="brand-name"><b>V2Echo</b><span>通知助手</span></div>
+          <button class="icon-btn" type="button" aria-label="收起侧栏">
+            <svg class="icon" aria-hidden="true"><use href="#i-panel-left"/></svg>
+          </button>
+        </div>
+        <nav aria-label="主导航">
+          <p class="side-label">主要</p>
+          <a class="nav-item is-active" href="#" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg><span class="nav-text">概览</span></a>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg><span class="nav-text">个人消息</span><span class="nav-count is-hot">12</span></a>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><span class="nav-text">关注动态</span></a>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg><span class="nav-text">通知</span><span class="nav-count is-hot">3</span></a>
+          <p class="side-label">管理</p>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-clipboard"/></svg><span class="nav-text">检查记录</span></a>
+          <a class="nav-item" href="#"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span class="nav-text">设置</span></a>
+        </nav>
+        <div class="side-foot">
+          <div class="side-status">
+            <span class="dot ok"></span>
+            <span class="status-text">通知服务运行中</span>
+            <time>2 分钟前</time>
+          </div>
+          <button class="account" type="button" aria-label="账号菜单">
+            <span class="avatar">W</span>
+            <span class="account-meta"><b>wizcheu</b><span>管理员</span></span>
+            <span class="icon-btn" aria-hidden="true"><svg class="icon"><use href="#i-more"/></svg></span>
+          </button>
+        </div>
+      </aside>
+
+      <div class="main">
+        <div class="content">
+          <div class="breadcrumbs">
+            <svg class="icon" aria-hidden="true"><use href="#i-home"/></svg>
+            <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            <span>V2Echo</span>
+            <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            <span class="current">概览</span>
+          </div>
+
+          <div class="page-head">
+            <div>
+              <h2 class="page-title">概览</h2>
+              <p class="page-sub">通知服务运行中，最近检查于 2 分钟前。</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary btn-lg" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>刷新
+              </button>
+              <button class="btn btn-primary btn-lg" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-zap"/></svg>立即检查
+              </button>
+            </div>
+          </div>
+
+          <div class="metrics">
+            <div class="metric">
+              <div class="metric-label">未读消息</div>
+              <div class="metric-value">12</div>
+              <div class="metric-foot"><span class="dot accent"></span>较上次 +3</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">关注成员</div>
+              <div class="metric-value">3</div>
+              <div class="metric-foot"><span class="dot"></span>2 位有新帖</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">待推送</div>
+              <div class="metric-value">0</div>
+              <div class="metric-foot"><span class="dot ok"></span>全部已送达</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">近 24 小时异常</div>
+              <div class="metric-value">1</div>
+              <div class="metric-foot"><span class="dot warn"></span>关注帖子 · 1 次</div>
+            </div>
+          </div>
+
+          <div class="section-head">
+            <h3>检查概况</h3>
+            <button class="btn btn-ghost btn-sm" type="button">查看记录</button>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">检查项</th>
+                  <th scope="col">状态</th>
+                  <th scope="col">最近检查</th>
+                  <th scope="col">下次检查</th>
+                  <th scope="col" class="num">间隔</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="strong">个人消息</td>
+                  <td><span class="status"><span class="dot ok"></span>正常</span></td>
+                  <td class="tnum">14:32</td>
+                  <td class="tnum">14:42</td>
+                  <td class="num">10 分钟</td>
+                </tr>
+                <tr>
+                  <td class="strong">关注成员</td>
+                  <td><span class="status"><span class="dot ok"></span>正常</span></td>
+                  <td class="tnum">14:31</td>
+                  <td class="tnum">14:46</td>
+                  <td class="num">15 分钟</td>
+                </tr>
+                <tr>
+                  <td class="strong">关注帖子</td>
+                  <td><span class="status warn"><span class="dot warn"></span>1 条待重试</span></td>
+                  <td class="tnum">14:29</td>
+                  <td class="tnum">14:34</td>
+                  <td class="num">5 分钟</td>
+                </tr>
+                <tr>
+                  <td class="strong">账号验证</td>
+                  <td><span class="status"><span class="dot ok"></span>正常</span></td>
+                  <td class="tnum">14:00</td>
+                  <td class="tnum">15:00</td>
+                  <td class="num">1 小时</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section-head">
+            <h3>最近通知</h3>
+            <span class="meta">最近 24 小时</span>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">时间</th>
+                  <th scope="col">类型</th>
+                  <th scope="col">内容</th>
+                  <th scope="col">状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="tnum">14:31</td>
+                  <td>回复</td>
+                  <td class="strong">关于 macOS 端通知的几点建议</td>
+                  <td><span class="status"><span class="dot ok"></span>已推送</span></td>
+                </tr>
+                <tr>
+                  <td class="tnum">14:18</td>
+                  <td>提及</td>
+                  <td class="strong">V2Echo 的检查策略</td>
+                  <td><span class="status"><span class="dot ok"></span>已推送</span></td>
+                </tr>
+                <tr>
+                  <td class="tnum">13:56</td>
+                  <td>主题感谢</td>
+                  <td class="strong">分享一个 V2EX 通知助手</td>
+                  <td><span class="status"><span class="dot ok"></span>已推送</span></td>
+                </tr>
+                <tr>
+                  <td class="tnum">13:40</td>
+                  <td>回复感谢</td>
+                  <td class="strong">设置页的交互细节</td>
+                  <td><span class="status"><span class="dot"></span>待推送</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="page-foot">数据更新于 14:33 · 自动刷新间隔 10 分钟</p>
+        </div>
+      </div>
+    </div>
+    <figcaption class="window-caption">
+      <span class="dot ok"></span>概览页 · 指标条、表格与状态点，不使用 KPI 卡片。
+    </figcaption>
+  </section>
+
+  <section class="doc-section" id="preview-login">
+    <div class="doc-section-head">
+      <span class="idx">03</span>
+      <h2>登录</h2>
+      <p>没有光晕，没有渐变；一张安静的白卡。</p>
+    </div>
+    <div class="login-stage">
+      <div class="login-card">
+        <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"/></svg>
+        <h2>连接通知助手</h2>
+        <p class="sub">输入部署时配置的管理员令牌，管理通知、关注与检查。</p>
+        <form class="login-form" onsubmit="return false">
+          <div>
+            <label class="field-label" for="demo-token">访问令牌</label>
+            <input class="input" id="demo-token" type="password" placeholder="粘贴管理员令牌" autocomplete="current-password">
+          </div>
+          <button class="btn btn-primary" type="submit">继续</button>
+        </form>
+        <p class="login-foot">V2Echo Notifier · 仅限管理员</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="doc-section" id="preview-tokens">
+    <div class="doc-section-head">
+      <span class="idx">04</span>
+      <h2>设计令牌与控件</h2>
+      <p>数值与 DESIGN.md v2 一致；色值随明暗与主题色实时更新。</p>
+    </div>
+    <div class="doc-panel">
+      <div class="sub-head"><h3>色彩</h3><span>语义令牌 · 当前主题</span></div>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-canvas)"></div><div class="swatch-name">canvas</div><div class="swatch-val" data-token-value="--color-canvas">#f4f4f5</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-surface)"></div><div class="swatch-name">surface</div><div class="swatch-val" data-token-value="--color-surface">#ffffff</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-rail)"></div><div class="swatch-name">rail</div><div class="swatch-val" data-token-value="--color-rail">#fafafa</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-panel)"></div><div class="swatch-name">panel</div><div class="swatch-val" data-token-value="--color-panel">#f6f6f7</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-input)"></div><div class="swatch-name">input</div><div class="swatch-val" data-token-value="--color-input">#f2f2f3</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-ink)"></div><div class="swatch-name">ink</div><div class="swatch-val" data-token-value="--color-ink">#18181b</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-ink-soft)"></div><div class="swatch-name">ink-soft</div><div class="swatch-val" data-token-value="--color-ink-soft">#4b4b54</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-ink-muted)"></div><div class="swatch-name">ink-muted</div><div class="swatch-val" data-token-value="--color-ink-muted">#5d5d67</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-line)"></div><div class="swatch-name">line</div><div class="swatch-val" data-token-value="--color-line">#e9e9ec</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-line-strong)"></div><div class="swatch-name">line-strong</div><div class="swatch-val" data-token-value="--color-line-strong">#dedee3</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-primary)"></div><div class="swatch-name">primary</div><div class="swatch-val" data-token-value="--color-primary">#18181b</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-accent)"></div><div class="swatch-name">accent</div><div class="swatch-val" data-token-value="--color-accent">#8b6ff2</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-accent-strong)"></div><div class="swatch-name">accent-strong</div><div class="swatch-val" data-token-value="--color-accent-strong">#5b45c9</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-accent-soft)"></div><div class="swatch-name">accent-soft</div><div class="swatch-val" data-token-value="--color-accent-soft">#f2eeff</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-success-solid)"></div><div class="swatch-name">success-solid</div><div class="swatch-val" data-token-value="--color-success-solid">#16a34a</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-warning-solid)"></div><div class="swatch-name">warning-solid</div><div class="swatch-val" data-token-value="--color-warning-solid">#d97706</div></div>
+        <div class="swatch"><div class="swatch-chip" style="--sw:var(--color-danger-solid)"></div><div class="swatch-name">danger-solid</div><div class="swatch-val" data-token-value="--color-danger-solid">#ef4444</div></div>
+      </div>
+
+      <div class="sub-head"><h3>字体</h3><span>系统字栈 · 400 / 500 / 600</span></div>
+      <div class="type-rows">
+        <div class="type-row"><div class="type-tag">Display · 36 / 600</div><div class="type-sample"><span class="t-display"><span class="num">36</span> 条未读</span></div></div>
+        <div class="type-row"><div class="type-tag">H1 · 28 / 600</div><div class="type-sample"><span class="t-h1">设置</span></div></div>
+        <div class="type-row"><div class="type-tag">H2 · 20 / 600</div><div class="type-sample"><span class="t-h2">检查概况</span></div></div>
+        <div class="type-row"><div class="type-tag">H3 · 16 / 600</div><div class="type-sample"><span class="t-h3">常规检查间隔</span></div></div>
+        <div class="type-row"><div class="type-tag">Body · 14 / 400</div><div class="type-sample"><span class="t-body">打开页面后立即同步一次通知与关注状态。</span></div></div>
+        <div class="type-row"><div class="type-tag">Label · 13 / 500</div><div class="type-sample"><span class="t-label">未读消息</span></div></div>
+        <div class="type-row"><div class="type-tag">Meta · 12 / 400</div><div class="type-sample"><span class="t-meta">最近检查今天 14:32 · 下次 14:42</span></div></div>
+        <div class="type-row"><div class="type-tag">Micro · 11 / 500</div><div class="type-sample"><span class="t-micro">通知服务运行中</span></div></div>
+        <div class="type-row"><div class="type-tag">Metric · 28 / 600</div><div class="type-sample"><span class="t-metric"><span class="num">12</span></span></div></div>
+        <div class="type-row"><div class="type-tag">Kbd · 11 / 500</div><div class="type-sample"><span class="keys"><kbd class="kbd">⌘</kbd><span class="kbd-plus">+</span><kbd class="kbd">F</kbd></span></div></div>
+      </div>
+
+      <div class="sub-head"><h3>控件</h3><span>按钮、输入、开关、键帽、状态</span></div>
+      <div class="control-groups">
+        <div class="control-group">
+          <div class="control-label">按钮</div>
+          <div class="cluster">
+            <button class="btn btn-primary btn-lg" type="button"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>保存更改</button>
+            <button class="btn btn-secondary btn-lg" type="button">取消</button>
+            <button class="btn btn-ghost btn-lg" type="button">重新验证</button>
+            <button class="btn btn-danger btn-lg" type="button"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>清除缓存</button>
+            <button class="icon-btn" type="button" aria-label="刷新"><svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg></button>
+          </div>
+          <div class="cluster">
+            <button class="btn btn-primary is-loading" type="button" disabled><span class="spinner"></span>保存中</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">输入与选择</div>
+          <div class="field-demo">
+            <label class="field-label" for="demo-select">检查时段</label>
+            <div class="select-wrap">
+              <svg class="icon leading" aria-hidden="true"><use href="#i-globe"/></svg>
+              <select class="select has-leading" id="demo-select">
+                <option>08:00 – 24:00</option>
+                <option>09:00 – 22:00</option>
+              </select>
+              <svg class="icon chev" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+            </div>
+          </div>
+          <div class="field-demo">
+            <label class="field-label" for="demo-search">搜索</label>
+            <input class="input" id="demo-search" type="search" placeholder="搜索设置">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">开关与键帽</div>
+          <div class="cluster">
+            <button class="switch" type="button" role="switch" aria-checked="true" aria-label="示例开启"></button><span class="switch-text">已开启</span>
+          </div>
+          <div class="cluster">
+            <button class="switch" type="button" role="switch" aria-checked="false" aria-label="示例关闭"></button><span class="switch-text">已关闭</span>
+          </div>
+          <div class="cluster">
+            <span class="keys"><kbd class="kbd">⌘</kbd><span class="kbd-plus">+</span><kbd class="kbd">F</kbd></span><span class="keys-note">搜索</span>
+          </div>
+          <div class="cluster">
+            <span class="keys"><kbd class="kbd">⌥</kbd><span class="kbd-plus">+</span><kbd class="kbd">⇧</kbd><span class="kbd-plus">+</span><kbd class="kbd">A</kbd></span><span class="keys-note">添加</span>
+          </div>
+          <div class="cluster">
+            <span class="keys"><kbd class="kbd wide">Space</kbd></span><span class="keys-note">预览</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">状态与徽标</div>
+          <div class="cluster">
+            <span class="status"><span class="dot ok"></span>运行中</span>
+            <span class="status warn"><span class="dot warn"></span>1 条待重试</span>
+            <span class="status danger"><span class="dot danger"></span>验证失败</span>
+            <span class="status"><span class="dot"></span>已暂停</span>
+          </div>
+          <div class="cluster">
+            <span class="badge solid">12</span>
+            <span class="badge">Beta</span>
+            <span class="badge">v2.0</span>
+          </div>
+        </div>
+
+        <div class="control-group span-2">
+          <div class="control-label">面板与提示</div>
+          <div class="panel">访问凭据使用 <strong>AES-GCM</strong> 加密保存在 D1，仅用于读取 V2EX 通知。</div>
+          <div class="banner">
+            <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+            <div><strong>访问凭据尚未就绪</strong>请先填写 Cookie 与 PAT，再配对 App。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="page-foot" style="max-width:1280px;margin:40px auto 0">Ink 墨线 · V2Echo 通知助手设计规范 v2 · 完整规则见 DESIGN.md</p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="dot ok"></span><span id="toastText">已保存更改</span>
+</div>
+
+<script>
+  const root = document.documentElement;
+  const appWindow = document.getElementById('appWindow');
+  const docTheme = document.getElementById('docTheme');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toastText');
+  let toastTimer;
+
+  const moonIcon = '<svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>';
+  const sunIcon = '<svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg>';
+
+  function syncTokenValues() {
+    const styles = getComputedStyle(root);
+    document.querySelectorAll('[data-token-value]').forEach((el) => {
+      el.textContent = styles.getPropertyValue(el.dataset.tokenValue).trim();
+    });
+  }
+
+  function applyTheme(dark) {
+    root.dataset.theme = dark ? 'dark' : 'light';
+    document.querySelectorAll('.mode-card').forEach((card) => {
+      card.setAttribute('aria-checked', String(card.dataset.mode === (dark ? 'dark' : 'light')));
+    });
+    docTheme.setAttribute('aria-pressed', String(dark));
+    docTheme.innerHTML = (dark ? sunIcon : moonIcon) + '<span>' + (dark ? '浅色' : '深色') + '</span>';
+    syncTokenValues();
+  }
+
+  docTheme.addEventListener('click', () => {
+    applyTheme(root.dataset.theme !== 'dark');
+  });
+
+  document.querySelectorAll('.mode-card').forEach((card) => {
+    card.addEventListener('click', () => applyTheme(card.dataset.mode === 'dark'));
+  });
+
+  document.querySelectorAll('[data-accent-option]').forEach((tile) => {
+    tile.addEventListener('click', () => {
+      root.dataset.accent = tile.dataset.accentOption;
+      document.querySelectorAll('[data-accent-option]').forEach((other) => {
+        other.setAttribute('aria-checked', String(other === tile));
+      });
+      syncTokenValues();
+    });
+  });
+
+  document.querySelectorAll('.switch').forEach((sw) => {
+    sw.addEventListener('click', () => {
+      sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true'));
+    });
+  });
+
+  const tabs = Array.from(document.querySelectorAll('.tabs [role="tab"]'));
+  const panels = Array.from(document.querySelectorAll('.tab-panel'));
+
+  function selectTab(tab) {
+    tabs.forEach((current) => {
+      const active = current === tab;
+      current.setAttribute('aria-selected', String(active));
+      current.tabIndex = active ? 0 : -1;
+    });
+    panels.forEach((panel) => {
+      panel.hidden = panel.id !== tab.getAttribute('aria-controls');
+    });
+  }
+
+  tabs.forEach((tab) => tab.addEventListener('click', () => selectTab(tab)));
+  document.querySelector('.tabs').addEventListener('keydown', (event) => {
+    if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+    const current = tabs.indexOf(document.activeElement);
+    if (current < 0) return;
+    let next = current;
+    if (event.key === 'ArrowRight') next = (current + 1) % tabs.length;
+    if (event.key === 'ArrowLeft') next = (current - 1 + tabs.length) % tabs.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = tabs.length - 1;
+    tabs[next].focus();
+    selectTab(tabs[next]);
+    event.preventDefault();
+  });
+
+  const collapseBtn = document.getElementById('collapseBtn');
+  collapseBtn.addEventListener('click', () => {
+    const collapsed = appWindow.classList.toggle('is-collapsed');
+    collapseBtn.setAttribute('aria-expanded', String(!collapsed));
+  });
+
+  const scrim = document.getElementById('scrim');
+  const menuBtn = document.getElementById('menuBtn');
+  const drawerClose = document.getElementById('drawerClose');
+
+  function setDrawer(open) {
+    appWindow.classList.toggle('drawer-open', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+  }
+
+  menuBtn.addEventListener('click', () => {
+    setDrawer(true);
+    drawerClose.focus();
+  });
+  drawerClose.addEventListener('click', () => {
+    setDrawer(false);
+    menuBtn.focus();
+  });
+  scrim.addEventListener('click', () => setDrawer(false));
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && appWindow.classList.contains('drawer-open')) {
+      setDrawer(false);
+      menuBtn.focus();
+    }
+  });
+
+  const media = window.matchMedia('(max-width: 900px)');
+  function handleMedia() {
+    if (media.matches) {
+      appWindow.classList.remove('is-collapsed');
+      setDrawer(false);
+    }
+  }
+  media.addEventListener('change', handleMedia);
+
+  document.querySelectorAll('.nav-item').forEach((item) => {
+    item.addEventListener('click', (event) => {
+      if (item.getAttribute('href') === '#') event.preventDefault();
+    });
+  });
+
+  function showToast(message) {
+    toastText.textContent = message;
+    toast.classList.add('is-visible');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2600);
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', () => showToast('已保存更改'));
+  document.getElementById('testBtn').addEventListener('click', () => showToast('测试通知已发送'));
+
+  applyTheme(false);
+  syncTokenValues();
+</script>
+</body>
+</html>
