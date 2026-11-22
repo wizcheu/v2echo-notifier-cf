@@ -8,7 +8,7 @@ import { defineConfig } from "vite";
 const pkg = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url), "utf8"),
 ) as { version?: string };
-const rawVersion = (process.env.APP_VERSION || pkg.version || "0.1.0").trim().replace(/^v/, "");
+const rawVersion = (process.env.APP_VERSION || pkg.version || "0.0.1").trim().replace(/^v/, "");
 
 export default defineConfig({
   define: {

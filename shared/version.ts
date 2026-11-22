@@ -10,7 +10,7 @@ export const SEMVER_RE = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/;
 export const APP_VERSION =
   typeof __APP_VERSION__ === "string" && SEMVER_RE.test(__APP_VERSION__)
     ? __APP_VERSION__.replace(/^v/, "")
-    : "0.1.0";
+    : "0.0.1";
 
 export function normalizeVersion(value: string): string | null {
   const match = value.trim().match(SEMVER_RE);
