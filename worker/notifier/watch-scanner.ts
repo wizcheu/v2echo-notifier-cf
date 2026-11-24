@@ -167,7 +167,6 @@ async function checkWatchTarget(c: Context, s: Notifier, config: WatchConfig, ta
       );
       if (!monitor.scan || needsFreshSource) {
         monitor.scan = { started: c.now, phase: "members" };
-        await checkpoint();
       }
       while (c.now - started <= 25000) {
         const scan = monitor.scan!;
@@ -215,6 +214,12 @@ async function checkWatchTarget(c: Context, s: Notifier, config: WatchConfig, ta
                 (topic.updatedAt === undefined || topic.updatedAt >= since);
             });
             monitor.pending = [...fresh, ...monitor.pending];
+          }
+          if (!monitor.pending.length) {
+            state.boundary = scan.started;
+            delete monitor.scan;
+            await checkpoint(true);
+            return;
           }
           scan.phase = "candidates";
           await checkpoint();

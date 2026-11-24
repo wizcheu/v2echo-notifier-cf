@@ -114,7 +114,7 @@ export async function localWatchConfig(db: Database, accountID = 1): Promise<Wat
       CASE WHEN failures>0 THEN 'error' WHEN checking=1 THEN 'checking' WHEN last_checked=0 THEN 'baseline' ELSE 'ready' END AS state FROM watch_targets WHERE notifier_id=?`, accountID);
   return { ...config, applied_revision: config.config_owner === "assistant" ? config.revision : config.applied_revision,
     last_seen: Math.floor(Date.now() / 1000), last_checked: Math.max(0, ...targets.map(t => t.last_checked)), target_status: targets,
-    runtime_status: !state.enabled ? "paused" : state.blocked ? "credentials" : targets.some(t => t.state === "error") ? "error" :
+    runtime_status: !state.enabled ? "paused" : state.blocked ? "credentials" : !config.capable_recipient_count ? "waiting" : targets.some(t => t.state === "error") ? "error" :
       targets.some(t => t.state !== "ready") ? "scanning" : "ready" };
 }
 

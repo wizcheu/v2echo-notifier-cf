@@ -147,6 +147,21 @@ export default function FollowingMembers() {
 
   const members = target?.followed_members
   const feed = target?.member_feed
+  const watchCapable = Boolean(config?.capable_recipient_count)
+  const lastSyncedAt = Math.max(
+    feed?.observed_at ?? 0,
+    target?.members_observed_at ?? 0
+  )
+  const activeMember = useMemo(() => {
+    if (!selectedMember) return null
+    if (!members) return selectedMember
+    return members.some(
+      (member) =>
+        member.username.toLowerCase() === selectedMember.toLowerCase()
+    )
+      ? selectedMember
+      : null
+  }, [selectedMember, members])
   const watchedIds = useMemo(
     () => new Set((config?.topics ?? []).map((t) => t.topic_id)),
     [config]
@@ -168,8 +183,8 @@ export default function FollowingMembers() {
     const list = target?.member_feed?.topics ?? []
     return list.filter((topic) => {
       if (
-        selectedMember &&
-        topic.author.toLowerCase() !== selectedMember.toLowerCase()
+        activeMember &&
+        topic.author.toLowerCase() !== activeMember.toLowerCase()
       )
         return false
       if (!needle) return true
@@ -177,7 +192,7 @@ export default function FollowingMembers() {
         .toLowerCase()
         .includes(needle)
     })
-  }, [target?.member_feed?.topics, selectedMember, needle])
+  }, [target?.member_feed?.topics, activeMember, needle])
 
   const totalPages = Math.max(1, Math.ceil(filteredTopics.length / pageSize))
   const safePage = Math.min(pageIndex, totalPages - 1)
@@ -193,7 +208,7 @@ export default function FollowingMembers() {
     data.control.web_until,
     checkTime.open ? 0 : checkTime.opensAt
   )
-  const hasFilter = Boolean(selectedMember || needle)
+  const hasFilter = Boolean(activeMember || needle)
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -212,8 +227,8 @@ export default function FollowingMembers() {
           </span>
         }
         description={
-          feed
-            ? `${members ? `${format(members.length)} 位成员 · ` : ''}最近同步 ${shortTime(feed.observed_at)}`
+          lastSyncedAt > 0
+            ? `${members ? `${format(members.length)} 位成员 · ` : ''}最近同步 ${shortTime(lastSyncedAt)}`
             : '关注成员发布新主题时推送提醒。'
         }
         actions={
@@ -291,6 +306,17 @@ export default function FollowingMembers() {
           </AlertDescription>
         </Alert>
       )}
+      {refresh.notice && (
+        <Alert>
+          <AlertTitle>{refresh.notice}</AlertTitle>
+        </Alert>
+      )}
+      {watch.error && (
+        <Alert variant="destructive">
+          <AlertTitle>关注服务异常</AlertTitle>
+          <AlertDescription>{watch.error}</AlertDescription>
+        </Alert>
+      )}
       {target?.error && (
         <Alert variant="destructive">
           <AlertTitle>检查暂未完成</AlertTitle>
@@ -305,7 +331,7 @@ export default function FollowingMembers() {
           <AlertDescription>{target.member_feed_error}</AlertDescription>
         </Alert>
       )}
-      {!available && (
+      {!available ? (
         <Alert>
           <AlertTitle>关注功能尚未就绪</AlertTitle>
           <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
@@ -319,7 +345,43 @@ export default function FollowingMembers() {
             </Button>
           </AlertDescription>
         </Alert>
-      )}
+      ) : state.blocked ? (
+        <Alert variant="destructive">
+          <AlertTitle>检查已暂停</AlertTitle>
+          <AlertDescription>
+            账号或配对存在异常，请前往设置处理后自动恢复。
+          </AlertDescription>
+        </Alert>
+      ) : !watchCapable ? (
+        <Alert>
+          <AlertTitle>等待接收设备，定时同步已暂停</AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+            <span>
+              {config?.recipient_count
+                ? `已连接 ${format(config.recipient_count)} 台接收设备，但暂无支持关注提醒的 iOS/iPadOS 设备；恢复前不会定时同步关注名单与新帖。`
+                : '当前有效推送接收设备为 0 台（可能是 App 已注销推送、重装或切换构建环境），关注名单与新帖监测已暂停。请在 V2Echo App 中确认开启 Pro 个人远程提醒后同步状态。'}
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => void action('/notifier/watch/sync', 'POST')}
+              >
+                <RefreshCw className={cn('size-3.5', busy && 'animate-spin')} />
+                同步连接状态
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => (window.location.hash = 'settings-devices')}
+              >
+                设备配对
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {/* Interactive Followed Members Filter Strip */}
       {members && members.length > 0 && (
@@ -336,7 +398,7 @@ export default function FollowingMembers() {
             }}
             className={cn(
               'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors',
-              selectedMember === null
+              activeMember === null
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'bg-card text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
@@ -347,7 +409,7 @@ export default function FollowingMembers() {
               <span
                 className={cn(
                   'tabular-nums',
-                  selectedMember === null
+                  activeMember === null
                     ? 'text-primary-foreground/80'
                     : 'text-muted-foreground'
                 )}
@@ -358,7 +420,7 @@ export default function FollowingMembers() {
           </button>
           {members.map((member) => {
             const key = member.username.toLowerCase()
-            const activePill = selectedMember?.toLowerCase() === key
+            const activePill = activeMember?.toLowerCase() === key
             const count = memberPostCounts.get(key) ?? 0
             return (
               <button
@@ -695,7 +757,20 @@ export default function FollowingMembers() {
               <>
                 <dt className="text-muted-foreground">下次计划</dt>
                 <dd className="tabular-nums">
-                  {nextCheck > now ? time(nextCheck) : '等待本轮调度'}
+                  {!watchCapable
+                    ? '已暂停（等待有效接收设备）'
+                    : nextCheck > now
+                      ? time(nextCheck)
+                      : '等待本轮调度'}
+                </dd>
+              </>
+            )}
+            {config && (
+              <>
+                <dt className="text-muted-foreground">接收设备</dt>
+                <dd className="tabular-nums">
+                  支持关注 {format(config.capable_recipient_count)} / 有效{' '}
+                  {format(config.recipient_count)} 台
                 </dd>
               </>
             )}
@@ -720,9 +795,20 @@ export default function FollowingMembers() {
           </dl>
           {members && members.length > 0 && (
             <div className="space-y-2 border-t pt-3">
-              <p className="text-xs font-medium text-muted-foreground">
-                已关注成员（{format(members.length)} 人）
-              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-medium text-muted-foreground">
+                  已关注成员（{format(members.length)} 人）
+                </p>
+                <a
+                  href="https://www.v2ex.com/my/following"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  在 V2EX 查看
+                  <ArrowUpRight className="size-3" />
+                </a>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {members.map((member) => (
                   <a

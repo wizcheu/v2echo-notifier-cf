@@ -136,21 +136,37 @@ function followingMembers(doc: Branch, main: Element): FollowedMember[] {
   const countText = countLink[0]!.children.find((n): n is Element => n.type === "tag");
   const count = countText ? Number(text(countText).replaceAll(",", "")) : NaN;
   if (!Number.isSafeInteger(count) || count < 0) fail("关注人数无效");
+  const tagChildren = (node: Element) => node.children.filter((n): n is Element => n.type === "tag");
+  const directLinks = (node: Element) => tagChildren(node).filter(n => n.name === "a");
+  // Scope to the sidebar "我关注的人" box (direct avatar+name member link rows) so unrelated boxes cannot poison parsing.
+  const memberBoxes = tagChildren(right).filter(box => tagChildren(box).some(row => {
+    const links = directLinks(row);
+    return links.length >= 2 && links.some(a => all(a, n => n.name === "img").length > 0) &&
+      links.some(a => Boolean(member(a)));
+  }));
+  if (memberBoxes.length > 1) fail("关注成员列表结构异常");
+  const box = memberBoxes[0];
+  if (!box) {
+    if (count !== 0) fail("关注成员列表未读完整");
+    return [];
+  }
   const members: string[] = [];
   const followed_members: FollowedMember[] = [];
-  for (const box of right.children.filter((n): n is Element => n.type === "tag")) {
-    for (const row of box.children.filter((n): n is Element => n.type === "tag")) {
-      const links = row.children.filter((n): n is Element => n.type === "tag" && n.name === "a");
-      if (links.length !== 2 || !all(links[0]!, n => n.name === "img").length) continue;
-      const name = member(links[0]!);
-      if (!name || name.toLowerCase() !== member(links[1]!).toLowerCase() || text(links[1]!).toLowerCase() !== name.toLowerCase()) fail("关注成员身份无效");
-      members.push(name.toLowerCase());
-      const portraits = all(links[0]!, n => n.name === "img");
-      const portrait = portraits.length === 1 && cls(portraits[0]!, "avatar") ? portraits[0] : undefined;
-      const avatar = portrait && (!portrait.attribs.alt || portrait.attribs.alt.toLowerCase() === name.toLowerCase())
-        ? avatarURL(portrait.attribs.src) : "";
-      followed_members.push({ username: text(links[1]!), ...(avatar ? { avatar_url: avatar } : {}) });
-    }
+  for (const row of tagChildren(box)) {
+    const links = directLinks(row);
+    if (!links.length) continue;
+    const avatarLinks = links.filter(a => all(a, n => n.name === "img").length > 0);
+    if (links.length !== 2 || avatarLinks.length !== 1) fail("关注成员身份无效");
+    const avatarLink = avatarLinks[0]!;
+    const nameLink = links.find(a => a !== avatarLink)!;
+    const name = member(avatarLink);
+    if (!name || name.toLowerCase() !== member(nameLink).toLowerCase() || text(nameLink).toLowerCase() !== name.toLowerCase()) fail("关注成员身份无效");
+    members.push(name.toLowerCase());
+    const portraits = all(avatarLink, n => n.name === "img");
+    const portrait = portraits.length === 1 && cls(portraits[0]!, "avatar") ? portraits[0] : undefined;
+    const avatar = portrait && (!portrait.attribs.alt || portrait.attribs.alt.toLowerCase() === name.toLowerCase())
+      ? avatarURL(portrait.attribs.src) : "";
+    followed_members.push({ username: text(nameLink), ...(avatar ? { avatar_url: avatar } : {}) });
   }
   if (members.length !== count || new Set(members).size !== count) fail("关注成员列表未读完整");
   return followed_members;

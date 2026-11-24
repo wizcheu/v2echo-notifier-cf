@@ -316,9 +316,31 @@ export default function WatchedTopics() {
         </Alert>
       ) : !config?.capable_recipient_count ? (
         <Alert>
-          <AlertTitle>等待接收设备</AlertTitle>
-          <AlertDescription>
-            请在 V2Echo App 中启用有效的 Pro 个人远程提醒。
+          <AlertTitle>等待接收设备，定时检查已暂停</AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+            <span>
+              {config?.recipient_count
+                ? `已连接 ${format(config.recipient_count)} 台接收设备，但暂无支持关注提醒的 iOS/iPadOS 设备。`
+                : '当前有效推送接收设备为 0 台，请在 V2Echo App 中启用有效的 Pro 个人远程提醒后同步连接状态。'}
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => void action('/notifier/watch/sync', 'POST')}
+              >
+                <RefreshCw className={cn('size-3.5', busy && 'animate-spin')} />
+                同步连接状态
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => (window.location.hash = 'settings-devices')}
+              >
+                设备配对
+              </Button>
+            </div>
           </AlertDescription>
         </Alert>
       ) : null}
@@ -613,9 +635,11 @@ export default function WatchedTopics() {
                     <>
                       <dt className="text-muted-foreground">下次计划</dt>
                       <dd className="tabular-nums">
-                        {inspectedNextCheck > now
-                          ? time(inspectedNextCheck)
-                          : '等待本轮调度'}
+                        {!config?.capable_recipient_count
+                          ? '已暂停（等待有效接收设备）'
+                          : inspectedNextCheck > now
+                            ? time(inspectedNextCheck)
+                            : '等待本轮调度'}
                       </dd>
                     </>
                   )}

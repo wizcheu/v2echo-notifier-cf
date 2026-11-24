@@ -1,8 +1,8 @@
 import { useId } from "react";
 
 /**
- * Web evolution of the V2Echo app icon: white squircle, ink V and echo arcs.
- * The mark stays monochrome so it sits naturally in the shadcn-admin shell.
+ * Web adaptation of the V2Echo BrandViolet app icon: white squircle with bottom
+ * violet wash, #6C5CE7 V mark, and #8E7CF0 echo arcs.
  */
 export function BrandMark({
   className,
@@ -23,8 +23,8 @@ export function BrandMark({
     >
       <defs>
         <linearGradient id={gradientId} x1="0.5" y1="0.5" x2="0.5" y2="1">
-          <stop offset="0%" stopColor="#18181b" stopOpacity="0" />
-          <stop offset="100%" stopColor="#18181b" stopOpacity="0.06" />
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="100%" stopColor="#6C5CE7" stopOpacity="0.2" />
         </linearGradient>
       </defs>
       <rect width="1024" height="1024" rx="240" fill="#ffffff" />
@@ -47,7 +47,7 @@ export function BrandMark({
       />
       <g
         fill="none"
-        stroke="#a1a1aa"
+        stroke="#8E7CF0"
         strokeWidth="24"
         strokeLinecap="round"
       >
@@ -73,7 +73,7 @@ export function BrandMark({
            L 422 274
            C 414 253 402 240 380 240
            Z"
-        fill="#18181b"
+        fill="#6C5CE7"
       />
     </svg>
   );

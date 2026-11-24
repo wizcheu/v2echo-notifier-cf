@@ -47,6 +47,7 @@ type ChannelItem = {
   last: number
   errors: number
   enabled: boolean
+  waitingDevice?: boolean
   detail: string
 }
 
@@ -121,6 +122,7 @@ export default function Notifier() {
             ? { label: '部分暂缓', tone: 'warning' }
             : { label: `运行中 · ${checkScheduleLabel(s)}`, tone: 'success' }
 
+  const watchCapable = Boolean(watchConfig?.capable_recipient_count)
   const channels: ChannelItem[] = [
     {
       id: 'scan',
@@ -137,12 +139,15 @@ export default function Notifier() {
       href: 'checks-following',
       detail: !watchConfig
         ? '等待规则同步'
-        : watchConfig.following.enabled
-          ? '新帖提醒已开启'
-          : '新帖提醒未开启',
+        : !watchConfig.following.enabled
+          ? '新帖提醒未开启'
+          : !watchCapable
+            ? '待接收设备，监测已暂停'
+            : '新帖提醒已开启',
       last: following?.last_checked ?? 0,
       errors: checkErrors.following_topic,
       enabled: Boolean(s.enabled) && Boolean(watchConfig?.following.enabled),
+      waitingDevice: Boolean(watchConfig?.following.enabled) && !watchCapable,
     },
     {
       id: 'topics',
@@ -150,12 +155,15 @@ export default function Notifier() {
       href: 'checks-topics',
       detail: watchConfig
         ? activeTopics > 0
-          ? `${activeTopics} 篇监测中`
+          ? !watchCapable
+            ? `${activeTopics} 篇待接收设备`
+            : `${activeTopics} 篇监测中`
           : '暂无开启的帖子'
         : '等待规则同步',
       last: lastTopicCheck,
       errors: checkErrors.topic_reply,
       enabled: Boolean(s.enabled) && activeTopics > 0,
+      waitingDevice: activeTopics > 0 && !watchCapable,
     },
   ]
 
@@ -166,9 +174,11 @@ export default function Notifier() {
       ? { label: '已暂停', tone: 'neutral' }
       : !channel.enabled
         ? { label: '未开启', tone: 'neutral' }
-        : channel.errors > 0
-          ? { label: `${channel.errors} 次异常`, tone: 'danger' }
-          : { label: '正常', tone: 'success' }
+        : channel.waitingDevice
+          ? { label: '待接收设备', tone: 'warning' }
+          : channel.errors > 0
+            ? { label: `${channel.errors} 次异常`, tone: 'danger' }
+            : { label: '正常', tone: 'success' }
 
   const recent = [...s.events]
     .sort((a, b) => b.created_at - a.created_at)
@@ -357,7 +367,11 @@ export default function Notifier() {
               : format(following.member_count)
           }
           hint={
-            watchConfig?.following.enabled ? '新帖提醒已开启' : '新帖提醒未开启'
+            !watchConfig?.following.enabled
+              ? '新帖提醒未开启'
+              : !watchCapable
+                ? '待接收设备，监测已暂停'
+                : '新帖提醒已开启'
           }
           icon={Users}
           href="following-topics"

@@ -287,6 +287,15 @@ describe('followed member presentation', () => {
     expect(result.members).toEqual(['writer']);
     expect(result.followed_members).toEqual([{ username: 'writer' }]);
   });
+
+  it('ignores unrelated sidebar boxes with paired non-member links and rejects duplicate member boxes', () => {
+    const promo = '<div class="box"><div class="cell"><a href="/promo"><img src="/static/img/promo.png"></a><a href="/promo">Promo</a></div></div>';
+    const withPromo = followingHTML([], ['tw93', 'ibireme']).replace('<div class="box">', `${promo}<div class="box">`);
+    expect(parseFollowedMembers(withPromo, 'tester')).toEqual([{ username: 'tw93' }, { username: 'ibireme' }]);
+    const duplicateBox = '<div class="box"><div>other</div><div><a href="/member/extra"><img></a><a href="/member/extra">extra</a></div></div>';
+    const withDup = followingHTML([], ['tw93']).replace('</div></div></div>', `</div></div>${duplicateBox}</div>`);
+    expect(() => parseFollowedMembers(withDup, 'tester')).toThrow('关注成员列表结构异常');
+  });
 });
 
 const root = new URL('../../site-data/html_20260701/', import.meta.url);

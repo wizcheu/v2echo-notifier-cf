@@ -1150,3 +1150,35 @@ it("keeps the current source cache and uncommitted candidate when the notificati
   await resumeFollowing(); await run(topicHTML(201, since + 1000));
   expect(await followingEventIDs()).toEqual([201]);
 });
+
+it("escalates backoff across repeated member-list failures without resetting failures or marking checking", async () => {
+  await enable(); await baseline();
+  const previous = await followingState();
+  await due();
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const result = await call("/watch", { now, responses: [{ error: true }] });
+    expect(result.error).toBeUndefined();
+    expect(paths(result)).toEqual(["/my/following?p=1"]);
+    const target = await db.prepare("SELECT failures,checking,next_check,error FROM watch_targets WHERE target_key='following'").first<any>();
+    expect(target.failures).toBe(attempt);
+    expect(target.checking).toBe(0);
+    expect(target.error).not.toBe("");
+    const delay = 30000 * 2 ** (attempt - 1);
+    expect(target.next_check - now).toBeGreaterThanOrEqual(delay);
+    expect(target.next_check - now).toBeLessThan(delay + 5000);
+    expect(await followingState()).toEqual(previous);
+    now = target.next_check + 1;
+  }
+  const recovered = await run(memberList(["writer", "tw93"]), membersFeedHTML([{ id: 200 }]));
+  expect(paths(recovered)).toEqual(["/my/following?p=1", "/?tab=members"]);
+  expect((await followingState()).followed_members.map((m: any) => m.username)).toEqual(["writer", "tw93"]);
+});
+
+it("reports runtime_status waiting when no capable watch recipients are active", async () => {
+  await enable();
+  await baseline();
+  config.capable_recipient_count = 0;
+  await db.prepare("UPDATE watch_control SET config=?").bind(JSON.stringify(config)).run();
+  const state = (await call("/watch-state")).result;
+  expect(state.config.runtime_status).toBe("waiting");
+});

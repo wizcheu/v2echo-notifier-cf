@@ -114,7 +114,10 @@ export function Settings() {
   const pairingInvalid = s.blocked === 'pairing'
   const paired = Boolean(s.binding_id) && !pairingInvalid
   const watchClients = s.watches.clients.length
+  const watchConfig = s.watches.config
   const watchAuthMissing = paired && watchClients === 0
+  const watchDeviceMissing =
+    paired && Boolean(watchConfig) && !watchConfig!.capable_recipient_count
   const credentialsReady =
     data.credentials.cookie && data.credentials.pat && s.storage_ready
 
@@ -408,11 +411,44 @@ export function Settings() {
                       </AlertDescription>
                     </Alert>
                   )}
+                  {watchDeviceMissing && (
+                    <Alert>
+                      <AlertTitle>
+                        {watchConfig?.recipient_count
+                          ? '暂无支持关注提醒的接收设备'
+                          : '当前无有效推送接收设备'}
+                      </AlertTitle>
+                      <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+                        <span>
+                          {watchConfig?.recipient_count
+                            ? `推送服务当前记录 ${watchConfig.recipient_count} 台个人提醒设备，但支持关注提醒的设备为 0 台；关注成员与关注帖子监测已暂停。`
+                            : '推送服务当前记录的有效接收设备为 0 台（可能是 App 已注销推送、重装或切换构建环境），关注成员与关注帖子监测已暂停。请在 V2Echo App 中重新开启或扫码绑定个人远程提醒。'}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busy}
+                          onClick={() =>
+                            void action('/notifier/watch/sync', 'POST')
+                          }
+                        >
+                          <RefreshCw
+                            className={cn('size-3.5', busy && 'animate-spin')}
+                          />
+                          同步连接状态
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   <SettingsRow
                     label="推送通道"
                     description={
                       s.binding_id && s.paired_at > 0
-                        ? `配对于 ${time(s.paired_at)}`
+                        ? `配对于 ${time(s.paired_at)}${
+                            watchConfig
+                              ? ` · 有效接收设备 ${watchConfig.recipient_count} 台（支持关注 ${watchConfig.capable_recipient_count} 台）`
+                              : ''
+                          }`
                         : '扫码后自动绑定当前账号的推送通道。'
                     }
                   >
@@ -432,10 +468,28 @@ export function Settings() {
                             ? '个人提醒已连接'
                             : '尚未配对'}
                       </StatusBadge>
+                      {watchDeviceMissing && (
+                        <StatusBadge tone="warning">待接收设备</StatusBadge>
+                      )}
                       {watchAuthMissing && (
                         <StatusBadge tone="warning">
                           关注管理未授权
                         </StatusBadge>
+                      )}
+                      {paired && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busy}
+                          onClick={() =>
+                            void action('/notifier/watch/sync', 'POST')
+                          }
+                        >
+                          <RefreshCw
+                            className={cn('size-3.5', busy && 'animate-spin')}
+                          />
+                          同步状态
+                        </Button>
                       )}
                     </div>
                   </SettingsRow>
